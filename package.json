@@ -10,6 +10,14 @@
     "canvas"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mahabeer-dev/react-photo-cropper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mahabeer-dev/react-photo-cropper/issues"
+  },
+  "homepage": "https://github.com/mahabeer-dev/react-photo-cropper#readme",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

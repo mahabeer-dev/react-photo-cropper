@@ -1,18 +1,18 @@
-# react-photo-cropper
+# @mr-mahabeer/react-photo-cropper
 
 Browser-only React image cropper with drag, zoom, circular or rectangular crop overlays, and a typed canvas export helper.
 
 ## Install
 
 ```bash
-npm install react-photo-cropper
+npm install @mr-mahabeer/react-photo-cropper
 ```
 
 ## Usage
 
 ```tsx
-import { ImageCropper } from "react-photo-cropper";
-import "react-photo-cropper/styles.css";
+import { ImageCropper } from "@mr-mahabeer/react-photo-cropper";
+import "@mr-mahabeer/react-photo-cropper/styles.css";
 
 function AvatarCropper() {
   return (
@@ -55,7 +55,7 @@ function AvatarCropper() {
 ## Export Helper
 
 ```ts
-import { getCroppedImage } from "react-photo-cropper";
+import { getCroppedImage } from "@mr-mahabeer/react-photo-cropper";
 
 const result = await getCroppedImage({
   image: htmlImageElement,
