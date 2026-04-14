@@ -6,7 +6,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent
 } from "react";
-import type { CropperChange, Point, Size } from "../types";
+import type { CropperChange, Point, Size, UseCropperOptions, UseCropperReturn } from "../types";
 import {
   clamp,
   clampPosition,
@@ -18,17 +18,6 @@ import {
   getRotatedRenderedBounds,
   rotatePointerDelta
 } from "../utils/cropMath";
-
-interface UseCropperOptions {
-  cropSize: Size;
-  rotation?: number;
-  minZoom?: number;
-  maxZoom?: number;
-  initialZoom?: number;
-  initialPosition?: Point;
-  onChange?: (state: CropperChange) => void;
-  onComplete?: (state: CropperChange) => void;
-}
 
 interface DragState {
   pointerId: number;
@@ -45,7 +34,7 @@ export function useCropper({
   initialPosition = { x: 0, y: 0 },
   onChange,
   onComplete
-}: UseCropperOptions) {
+}: UseCropperOptions): UseCropperReturn {
   const [imageSize, setImageSize] = useState<Size>({ width: 0, height: 0 });
   const rotation = rotationProp;
 

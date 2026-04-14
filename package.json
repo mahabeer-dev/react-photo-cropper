@@ -28,6 +28,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js",
+      "require": "./dist/headless.cjs"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "files": [
@@ -48,6 +53,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pack:check": "npm pack --dry-run",
+    "example:headless": "npm run build && cd examples/headless-custom-ui && npm install && npm run dev",
     "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "peerDependencies": {

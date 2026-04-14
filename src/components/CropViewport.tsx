@@ -1,5 +1,6 @@
 import type { CSSProperties, PointerEventHandler, RefObject } from "react";
 import type { CropShape, CrossOriginValue, Point, Size } from "../types";
+import { CropOverlayFrame } from "./CropOverlayFrame";
 
 interface CropViewportProps {
   src: string;
@@ -21,6 +22,8 @@ interface CropViewportProps {
   onPointerUp: PointerEventHandler<HTMLDivElement>;
   /** Appended to `ic-viewport` (e.g. `ic-viewport--card` from the variant registry). */
   viewportClassName?: string;
+  /** Corner radius for the inner crop window when `shape` is `"rect"`. */
+  overlayRectBorderRadius?: number;
 }
 
 export function CropViewport({
@@ -40,7 +43,8 @@ export function CropViewport({
   onPointerDown,
   onPointerMove,
   onPointerUp,
-  viewportClassName
+  viewportClassName,
+  overlayRectBorderRadius
 }: CropViewportProps) {
   const imageStyle: CSSProperties = {
     width: `${baseSize.width}px`,
@@ -71,9 +75,12 @@ export function CropViewport({
           })
         }
       />
-      <div className="ic-mask" aria-hidden="true">
-        <div className={`ic-frame ic-frame--${shape}`} />
-      </div>
+      <CropOverlayFrame
+        shape={shape}
+        rectBorderRadius={overlayRectBorderRadius}
+        className="ic-mask"
+        frameClassName={`ic-frame ic-frame--${shape}`}
+      />
     </div>
   );
 }

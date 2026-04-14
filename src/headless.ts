@@ -1,12 +1,10 @@
+/**
+ * Headless API — crop state hook, canvas export, crop math, and an optional **overlay** (`CropOverlayFrame`)
+ * without importing the full `ImageCropper` or `styles.css`.
+ * @packageDocumentation
+ */
 export { CropOverlayFrame } from "./components/CropOverlayFrame";
 export { useCropper } from "./hooks/useCropper";
-export { ImageCropper } from "./components/ImageCropper";
-export { CardCropperToolbar } from "./components/variants/CardCropperToolbar";
-export { DefaultCropperToolbar } from "./components/variants/DefaultCropperToolbar";
-export {
-  IMAGE_CROPPER_VARIANT_REGISTRY,
-  type ImageCropperVariantConfig
-} from "./components/variants/registry";
 export { getCroppedImage } from "./utils/canvas";
 export {
   clamp,
@@ -24,7 +22,6 @@ export {
 export type { CropOverlayFrameProps } from "./components/CropOverlayFrame";
 export type {
   CropArea,
-  CropImageSource,
   CropOutputOptions,
   CropShape,
   CrossOriginValue,
@@ -32,11 +29,6 @@ export type {
   CropperChange,
   CropperState,
   GetCroppedImageParams,
-  ImageCropperLabels,
-  ImageCropperProps,
-  ImageCropperToolbarComponent,
-  ImageCropperToolbarProps,
-  ImageCropperUIVariant,
   OutputMimeType,
   PixelCrop,
   Point,

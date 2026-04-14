@@ -176,6 +176,7 @@ export function ImageCropper({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         viewportClassName={variantConfig.viewportClassName}
+        overlayRectBorderRadius={uiVariant === "card" ? 10 : undefined}
       />
 
       {showControls ? (

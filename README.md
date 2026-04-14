@@ -65,6 +65,22 @@ const result = await getCroppedImage({
 });
 ```
 
+## Headless API (custom UI)
+
+Use **`useCropper`**, **`getCroppedImage`**, and **`cropMath`** helpers without importing `ImageCropper` or package CSS:
+
+```ts
+import {
+  useCropper,
+  getCroppedImage,
+  CropOverlayFrame
+} from "@mr-mahabeer/react-photo-cropper/headless";
+```
+
+**Overlay:** `CropOverlayFrame` draws the dimmed-outside + crop window (inline styles, no package CSS). Types **`UseCropperOptions`**, **`UseCropperReturn`**, **`CropperChange`**, **`CropOverlayFrameProps`**, etc., are exported from the same entry or the root package.
+
+**Runnable example** (Vite + your own markup/styles): see **[examples/headless-custom-ui](./examples/headless-custom-ui/)** and its [README](./examples/headless-custom-ui/README.md) for setup and integration steps.
+
 ## Cross-Origin Images
 
 If your image comes from another domain, canvas export will fail unless that image is served with valid CORS headers.

@@ -1,4 +1,9 @@
-import type { ChangeEvent, ComponentType, CSSProperties } from "react";
+import type {
+  ChangeEvent,
+  ComponentType,
+  CSSProperties,
+  PointerEventHandler
+} from "react";
 
 export type CropShape = "circle" | "rect";
 
@@ -37,6 +42,40 @@ export interface CropperState {
 export interface CropperChange extends CropperState {
   minZoom: number;
   maxZoom: number;
+}
+
+/** Options for {@link useCropper} — headless crop state (zoom, pan, rotation-aware math). */
+export interface UseCropperOptions {
+  cropSize: Size;
+  /** Clockwise degrees (0, 90, 180, 270); pass from your own rotation state. */
+  rotation?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  initialZoom?: number;
+  initialPosition?: Point;
+  onChange?: (state: CropperChange) => void;
+  onComplete?: (state: CropperChange) => void;
+}
+
+/** Return value of {@link useCropper} for custom previews and controls. */
+export interface UseCropperReturn {
+  imageSize: Size;
+  baseSize: Size;
+  isDragging: boolean;
+  minZoom: number;
+  maxZoom: number;
+  position: Point;
+  renderedSize: Size;
+  state: CropperChange | null;
+  /** Set from the image `onLoad` using natural width/height. */
+  setImageSize: (size: Size) => void;
+  /** Clamp-aware position update; optional `nextZoom` uses that zoom when clamping. */
+  setPosition: (next: Point, nextZoom?: number) => void;
+  setZoom: (nextZoom: number) => void;
+  reset: () => void;
+  handlePointerDown: PointerEventHandler<HTMLElement>;
+  handlePointerMove: PointerEventHandler<HTMLElement>;
+  handlePointerUp: PointerEventHandler<HTMLElement>;
 }
 
 export interface CropOutputOptions {
