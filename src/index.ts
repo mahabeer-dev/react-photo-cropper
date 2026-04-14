@@ -11,9 +11,13 @@ export {
   clampPosition,
   getCoverSize,
   getCropArea,
+  getEffectiveImageSize,
   getMinZoom,
   getPixelCrop,
-  getRenderedSize
+  getRenderedSize,
+  getRotatedRenderedBounds,
+  normalizeRotation,
+  rotatePointerDelta
 } from "./utils/cropMath";
 export type {
   CropArea,

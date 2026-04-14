@@ -4,6 +4,7 @@ import type {
   GetCroppedImageParams,
   OutputMimeType
 } from "../types";
+import { getEffectiveImageSize, normalizeRotation } from "./cropMath";
 
 function loadImageElement(
   src: string,
@@ -52,6 +53,39 @@ function canvasToBlob(
   });
 }
 
+function createLogicalOrientationCanvas(
+  source: HTMLImageElement,
+  rotation: 0 | 90 | 180 | 270
+): HTMLCanvasElement {
+  const naturalWidth = source.naturalWidth || source.width;
+  const naturalHeight = source.naturalHeight || source.height;
+  const effective = getEffectiveImageSize(
+    { width: naturalWidth, height: naturalHeight },
+    rotation
+  );
+
+  const logical = document.createElement("canvas");
+  logical.width = Math.max(1, Math.round(effective.width));
+  logical.height = Math.max(1, Math.round(effective.height));
+
+  const logicalContext = logical.getContext("2d");
+  if (!logicalContext) {
+    throw new Error("Canvas rendering context is not available.");
+  }
+
+  logicalContext.translate(logical.width / 2, logical.height / 2);
+  logicalContext.rotate((rotation * Math.PI) / 180);
+  logicalContext.drawImage(
+    source,
+    -naturalWidth / 2,
+    -naturalHeight / 2,
+    naturalWidth,
+    naturalHeight
+  );
+
+  return logical;
+}
+
 export async function getCroppedImage({
   image,
   crop,
@@ -61,10 +95,13 @@ export async function getCroppedImage({
   width = crop.width,
   height = crop.height,
   backgroundColor,
-  crossOrigin
+  crossOrigin,
+  rotation: rotationInput = 0
 }: GetCroppedImageParams): Promise<CroppedImageResult> {
   const sourceImage =
     typeof image === "string" ? await loadImageElement(image, crossOrigin) : image;
+
+  const rotation = normalizeRotation(rotationInput);
 
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(width));
@@ -90,17 +127,37 @@ export async function getCroppedImage({
     context.clip();
   }
 
-  context.drawImage(
-    sourceImage,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
+  if (rotation === 0) {
+    context.drawImage(
+      sourceImage,
+      crop.x,
+      crop.y,
+      crop.width,
+      crop.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+  } else {
+    const logical = createLogicalOrientationCanvas(sourceImage, rotation);
+    try {
+      context.drawImage(
+        logical,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+    } finally {
+      logical.width = 0;
+      logical.height = 0;
+    }
+  }
 
   if (shape === "circle") {
     context.restore();

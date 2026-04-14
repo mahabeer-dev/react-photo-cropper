@@ -9,6 +9,8 @@ interface CropViewportProps {
   baseSize: Size;
   position: Point;
   zoom: number;
+  /** Clockwise degrees (0, 90, 180, 270); applied after scale. */
+  rotation?: number;
   shape: CropShape;
   imageRef?: RefObject<HTMLImageElement | null>;
   disabled?: boolean;
@@ -29,6 +31,7 @@ export function CropViewport({
   baseSize,
   position,
   zoom,
+  rotation = 0,
   shape,
   imageRef,
   disabled = false,
@@ -42,7 +45,7 @@ export function CropViewport({
   const imageStyle: CSSProperties = {
     width: `${baseSize.width}px`,
     height: `${baseSize.height}px`,
-    transform: `translate(-50%, -50%) translate(${position.x}px, ${position.y}px) scale(${zoom})`
+    transform: `translate(-50%, -50%) translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`
   };
 
   return (

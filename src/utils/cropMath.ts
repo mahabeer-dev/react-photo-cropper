@@ -1,5 +1,41 @@
 import type { CropArea, PixelCrop, Point, Size } from "../types";
 
+export function normalizeRotation(degrees: number): 0 | 90 | 180 | 270 {
+  const snapped = Math.round(degrees / 90) * 90;
+  const normalized = ((snapped % 360) + 360) % 360;
+  return normalized as 0 | 90 | 180 | 270;
+}
+
+/** Size used for cover/zoom math when the image is shown rotated in 90° steps. */
+export function getEffectiveImageSize(imageSize: Size, rotationDeg: number): Size {
+  const r = normalizeRotation(rotationDeg);
+  if (r === 90 || r === 270) {
+    return { width: imageSize.height, height: imageSize.width };
+  }
+  return { width: imageSize.width, height: imageSize.height };
+}
+
+/** Viewport bounds for clamping drag when the scaled image is rotated in 90° steps. */
+export function getRotatedRenderedBounds(renderedSize: Size, rotationDeg: number): Size {
+  const r = normalizeRotation(rotationDeg);
+  if (r === 90 || r === 270) {
+    return { width: renderedSize.height, height: renderedSize.width };
+  }
+  return { width: renderedSize.width, height: renderedSize.height };
+}
+
+/** Map pointer delta from screen space into pre-rotation image local space. */
+export function rotatePointerDelta(deltaX: number, deltaY: number, rotationDeg: number): Point {
+  const r = normalizeRotation(rotationDeg);
+  const rad = (-r * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  return {
+    x: deltaX * cos - deltaY * sin,
+    y: deltaX * sin + deltaY * cos
+  };
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }

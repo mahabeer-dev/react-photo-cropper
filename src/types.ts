@@ -26,6 +26,8 @@ export interface CropArea extends Size, Point {
 export interface CropperState {
   zoom: number;
   position: Point;
+  /** Clockwise degrees; normalized to 0, 90, 180, or 270. */
+  rotation: number;
   cropSize: Size;
   imageSize: Size;
   renderedSize: Size;
@@ -64,6 +66,8 @@ export interface ImageCropperLabels {
   zoomOut: string;
   reset: string;
   save: string;
+  rotateLeft: string;
+  rotateRight: string;
 }
 
 /** Props passed to built-in and custom cropper toolbar components. */
@@ -82,6 +86,9 @@ export interface ImageCropperToolbarProps {
   isSaving: boolean;
   /** Whether `onSave` was provided to `ImageCropper`. */
   showSaveButton: boolean;
+  showRotation: boolean;
+  rotation: number;
+  onRotate: (deltaDegrees: number) => void;
   onZoomChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onAdjustZoom: (delta: number) => void;
   onReset: () => void;
@@ -95,6 +102,10 @@ export interface ImageCropperProps extends CropImageSource {
   uiVariant?: ImageCropperUIVariant;
   /** Renders instead of the toolbar for `uiVariant`. Use with `uiVariant` for root/viewport styling from the registry, or set `className` on `ImageCropper` for fully custom chrome. */
   toolbarComponent?: ImageCropperToolbarComponent;
+  /** Initial rotation in degrees (snapped to the nearest multiple of 90). */
+  initialRotation?: number;
+  /** When false, rotation controls are hidden (rotation stays at `initialRotation`). Default true. */
+  showRotation?: boolean;
   cropWidth?: number;
   cropHeight?: number;
   aspect?: number;
@@ -121,4 +132,6 @@ export interface GetCroppedImageParams extends CropOutputOptions {
   crop: PixelCrop;
   shape?: CropShape;
   crossOrigin?: CrossOriginValue;
+  /** Clockwise degrees (0, 90, 180, 270). When set, `crop` is in logical pixel space after rotation (same as `CropperState.pixelCrop`). */
+  rotation?: number;
 }

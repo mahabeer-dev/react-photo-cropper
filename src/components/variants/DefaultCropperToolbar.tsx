@@ -11,6 +11,9 @@ export function DefaultCropperToolbar({
   hasCropState,
   isSaving,
   showSaveButton,
+  showRotation,
+  rotation,
+  onRotate,
   onZoomChange,
   onAdjustZoom,
   onReset,
@@ -20,6 +23,29 @@ export function DefaultCropperToolbar({
 
   return (
     <div className="ic-toolbar">
+      {showRotation ? (
+        <>
+          <button
+            type="button"
+            className="ic-iconButton"
+            onClick={() => onRotate(-90)}
+            disabled={controlsDisabled}
+            aria-label={labels.rotateLeft}
+          >
+            ↺
+          </button>
+          <button
+            type="button"
+            className="ic-iconButton"
+            onClick={() => onRotate(90)}
+            disabled={controlsDisabled}
+            aria-label={labels.rotateRight}
+          >
+            ↻
+          </button>
+        </>
+      ) : null}
+
       <button
         type="button"
         className="ic-iconButton"

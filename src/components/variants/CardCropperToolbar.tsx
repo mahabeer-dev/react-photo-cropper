@@ -10,6 +10,8 @@ export function CardCropperToolbar({
   hasCropState,
   isSaving,
   showSaveButton,
+  showRotation,
+  onRotate,
   onZoomChange,
   onReset,
   onSave
@@ -18,6 +20,29 @@ export function CardCropperToolbar({
 
   return (
     <div className="ic-toolbar ic-toolbar--card">
+      {showRotation ? (
+        <div className="ic-card-rotateRow">
+          <button
+            type="button"
+            className="ic-iconButton ic-iconButton--compact"
+            onClick={() => onRotate(-90)}
+            disabled={controlsDisabled}
+            aria-label={labels.rotateLeft}
+          >
+            ↺
+          </button>
+          <button
+            type="button"
+            className="ic-iconButton ic-iconButton--compact"
+            onClick={() => onRotate(90)}
+            disabled={controlsDisabled}
+            aria-label={labels.rotateRight}
+          >
+            ↻
+          </button>
+        </div>
+      ) : null}
+
       <input
         className="ic-slider ic-slider--card"
         type="range"

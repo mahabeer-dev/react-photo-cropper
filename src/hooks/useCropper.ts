@@ -11,13 +11,17 @@ import {
   clamp,
   clampPosition,
   getCoverSize,
+  getEffectiveImageSize,
   getMinZoom,
   getPixelCrop,
-  getRenderedSize
+  getRenderedSize,
+  getRotatedRenderedBounds,
+  rotatePointerDelta
 } from "../utils/cropMath";
 
 interface UseCropperOptions {
   cropSize: Size;
+  rotation?: number;
   minZoom?: number;
   maxZoom?: number;
   initialZoom?: number;
@@ -34,6 +38,7 @@ interface DragState {
 
 export function useCropper({
   cropSize,
+  rotation: rotationProp = 0,
   minZoom: requestedMinZoom = 1,
   maxZoom: requestedMaxZoom = 3,
   initialZoom = 1,
@@ -42,6 +47,7 @@ export function useCropper({
   onComplete
 }: UseCropperOptions) {
   const [imageSize, setImageSize] = useState<Size>({ width: 0, height: 0 });
+  const rotation = rotationProp;
 
   const initialResolvedZoom = Math.min(
     Math.max(initialZoom, requestedMinZoom),
@@ -53,19 +59,28 @@ export function useCropper({
   const [isDragging, setIsDragging] = useState(false);
   const dragStateRef = useRef<DragState | null>(null);
 
+  const effectiveImageSize = useMemo(
+    () => getEffectiveImageSize(imageSize, rotation),
+    [imageSize, rotation]
+  );
+
   const minZoom = useMemo(
-    () => getMinZoom(imageSize, cropSize, requestedMinZoom),
-    [cropSize, imageSize, requestedMinZoom]
+    () => getMinZoom(effectiveImageSize, cropSize, requestedMinZoom),
+    [cropSize, effectiveImageSize, requestedMinZoom]
   );
   const maxZoom = Math.max(minZoom, requestedMaxZoom);
 
   const baseSize = useMemo(
-    () => getCoverSize(imageSize, cropSize),
-    [cropSize, imageSize]
+    () => getCoverSize(effectiveImageSize, cropSize),
+    [cropSize, effectiveImageSize]
   );
   const renderedSize = useMemo(
-    () => getRenderedSize(imageSize, cropSize, zoom),
-    [cropSize, imageSize, zoom]
+    () => getRenderedSize(effectiveImageSize, cropSize, zoom),
+    [cropSize, effectiveImageSize, zoom]
+  );
+  const renderedBounds = useMemo(
+    () => getRotatedRenderedBounds(renderedSize, rotation),
+    [renderedSize, rotation]
   );
 
   useEffect(() => {
@@ -74,23 +89,23 @@ export function useCropper({
 
   const setSafePosition = useCallback(
     (nextPosition: Point, nextZoom = zoom) => {
-      const nextRenderedSize = getRenderedSize(imageSize, cropSize, nextZoom);
-      setPosition(clampPosition(nextPosition, nextRenderedSize, cropSize));
+      const nextRendered = getRenderedSize(effectiveImageSize, cropSize, nextZoom);
+      const bounds = getRotatedRenderedBounds(nextRendered, rotation);
+      setPosition(clampPosition(nextPosition, bounds, cropSize));
     },
-    [cropSize, imageSize, zoom]
+    [cropSize, effectiveImageSize, rotation, zoom]
   );
 
   const updateZoom = useCallback(
     (nextZoom: number) => {
       const safeZoom = clamp(nextZoom, minZoom, maxZoom);
-      const nextRenderedSize = getRenderedSize(imageSize, cropSize, safeZoom);
+      const nextRendered = getRenderedSize(effectiveImageSize, cropSize, safeZoom);
+      const bounds = getRotatedRenderedBounds(nextRendered, rotation);
 
       setZoom(safeZoom);
-      setPosition((currentPosition) =>
-        clampPosition(currentPosition, nextRenderedSize, cropSize)
-      );
+      setPosition((currentPosition) => clampPosition(currentPosition, bounds, cropSize));
     },
-    [cropSize, imageSize, maxZoom, minZoom]
+    [cropSize, effectiveImageSize, maxZoom, minZoom, rotation]
   );
 
   const reset = useCallback(() => {
@@ -103,19 +118,42 @@ export function useCropper({
       return null;
     }
 
-    const safePosition = clampPosition(position, renderedSize, cropSize);
+    const safePosition = clampPosition(position, renderedBounds, cropSize);
 
     return {
       zoom,
       position: safePosition,
+      rotation,
       cropSize,
       imageSize,
       renderedSize,
-      pixelCrop: getPixelCrop(imageSize, cropSize, safePosition, zoom),
+      pixelCrop: getPixelCrop(effectiveImageSize, cropSize, safePosition, zoom),
       minZoom,
       maxZoom
     };
-  }, [cropSize, imageSize, maxZoom, minZoom, position, renderedSize, zoom]);
+  }, [
+    cropSize,
+    effectiveImageSize,
+    imageSize.height,
+    imageSize.width,
+    maxZoom,
+    minZoom,
+    position,
+    renderedBounds,
+    renderedSize,
+    rotation,
+    zoom
+  ]);
+
+  useEffect(() => {
+    if (!imageSize.width || !imageSize.height) {
+      return;
+    }
+
+    setPosition((currentPosition) =>
+      clampPosition(currentPosition, renderedBounds, cropSize)
+    );
+  }, [cropSize, imageSize.height, imageSize.width, renderedBounds, rotation]);
 
   useEffect(() => {
     if (!state) {
@@ -153,13 +191,14 @@ export function useCropper({
 
       const deltaX = event.clientX - dragState.origin.x;
       const deltaY = event.clientY - dragState.origin.y;
+      const local = rotatePointerDelta(deltaX, deltaY, rotation);
 
       setSafePosition({
-        x: dragState.position.x + deltaX,
-        y: dragState.position.y + deltaY
+        x: dragState.position.x + local.x,
+        y: dragState.position.y + local.y
       });
     },
-    [setSafePosition]
+    [rotation, setSafePosition]
   );
 
   const handlePointerUp = useCallback((event: ReactPointerEvent<HTMLElement>) => {

@@ -88,6 +88,13 @@
   cursor: pointer;
 }
 
+.ic-iconButton--compact {
+  min-width: 40px;
+  padding: 0 8px;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .ic-iconButton:disabled,
 .ic-saveButton:disabled,
 .ic-slider:disabled {
@@ -156,6 +163,12 @@
   align-items: stretch;
   gap: 16px;
   width: 100%;
+}
+
+.ic-card-rotateRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .ic-slider--card {

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { ImageCropperLabels, ImageCropperProps, Size } from "../types";
 import { getCroppedImage } from "../utils/canvas";
+import { normalizeRotation } from "../utils/cropMath";
 import { CropViewport } from "./CropViewport";
 import { useCropper } from "../hooks/useCropper";
 import { IMAGE_CROPPER_VARIANT_REGISTRY } from "./variants/registry";
@@ -9,7 +10,9 @@ const DEFAULT_LABELS: ImageCropperLabels = {
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
   reset: "Reset",
-  save: "Save"
+  save: "Save",
+  rotateLeft: "Rotate left",
+  rotateRight: "Rotate right"
 };
 
 function resolveCropSize({
@@ -49,7 +52,9 @@ export function ImageCropper({
   maxZoom = 3,
   zoomStep = 0.1,
   initialZoom = 1,
+  initialRotation = 0,
   initialPosition,
+  showRotation = true,
   disabled = false,
   className,
   style,
@@ -63,6 +68,7 @@ export function ImageCropper({
 }: ImageCropperProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [rotation, setRotation] = useState(() => normalizeRotation(initialRotation));
   const resolvedLabels = { ...DEFAULT_LABELS, ...labels };
   const cropSize = useMemo(
     () => resolveCropSize({ cropWidth, cropHeight, aspect, shape }),
@@ -78,12 +84,13 @@ export function ImageCropper({
     state,
     setImageSize,
     setZoom,
-    reset,
+    reset: resetCropper,
     handlePointerDown,
     handlePointerMove,
     handlePointerUp
   } = useCropper({
     cropSize,
+    rotation,
     minZoom,
     maxZoom,
     initialZoom,
@@ -91,6 +98,15 @@ export function ImageCropper({
     onChange,
     onComplete
   });
+
+  const handleRotate = (deltaDegrees: number) => {
+    setRotation((current) => normalizeRotation(current + deltaDegrees));
+  };
+
+  const handleReset = () => {
+    setRotation(normalizeRotation(initialRotation));
+    resetCropper();
+  };
 
   const variantConfig = IMAGE_CROPPER_VARIANT_REGISTRY[uiVariant];
   const Toolbar = toolbarComponent ?? variantConfig.Toolbar;
@@ -122,6 +138,7 @@ export function ImageCropper({
         crop: state.pixelCrop,
         shape,
         crossOrigin,
+        rotation: state.rotation,
         ...output
       });
 
@@ -149,6 +166,7 @@ export function ImageCropper({
         baseSize={baseSize}
         position={position}
         zoom={state?.zoom ?? safeMinZoom}
+        rotation={rotation}
         shape={shape}
         imageRef={imageRef}
         disabled={disabled}
@@ -172,9 +190,12 @@ export function ImageCropper({
           hasCropState={!!state}
           isSaving={isSaving}
           showSaveButton={!!onSave}
+          showRotation={showRotation}
+          rotation={rotation}
+          onRotate={handleRotate}
           onZoomChange={handleZoomChange}
           onAdjustZoom={handleAdjustZoom}
-          onReset={reset}
+          onReset={handleReset}
           onSave={handleSave}
         />
       ) : null}

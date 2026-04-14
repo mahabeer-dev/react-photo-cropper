@@ -77,6 +77,28 @@ describe("ImageCropper", () => {
     expect(onChange.mock.lastCall?.[0].pixelCrop.x).toBeGreaterThan(250);
   });
 
+  it("updates rotation when the rotate control is used", () => {
+    const onChange = vi.fn();
+    render(
+      <ImageCropper
+        src="avatar.png"
+        shape="rect"
+        cropWidth={200}
+        cropHeight={200}
+        onChange={onChange}
+      />
+    );
+
+    const image = screen.getByAltText("Image crop preview");
+    Object.defineProperty(image, "naturalWidth", { configurable: true, value: 1000 });
+    Object.defineProperty(image, "naturalHeight", { configurable: true, value: 500 });
+    fireEvent.load(image);
+
+    fireEvent.click(screen.getByRole("button", { name: "Rotate right" }));
+
+    expect(onChange.mock.lastCall?.[0].rotation).toBe(90);
+  });
+
   it("surfaces export failures through onError", async () => {
     const onError = vi.fn();
     vi.spyOn(canvasUtils, "getCroppedImage").mockRejectedValue(
