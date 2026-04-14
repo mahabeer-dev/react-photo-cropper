@@ -1,6 +1,6 @@
 {
   "name": "@mr-mahabeer/react-photo-cropper",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Browser-only React image cropper with typed crop utilities and canvas export helpers.",
   "keywords": [
     "react",
