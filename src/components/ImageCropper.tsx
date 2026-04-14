@@ -1,13 +1,9 @@
-import {
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent
-} from "react";
+import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { ImageCropperLabels, ImageCropperProps, Size } from "../types";
 import { getCroppedImage } from "../utils/canvas";
 import { CropViewport } from "./CropViewport";
 import { useCropper } from "../hooks/useCropper";
+import { IMAGE_CROPPER_VARIANT_REGISTRY } from "./variants/registry";
 
 const DEFAULT_LABELS: ImageCropperLabels = {
   zoomIn: "Zoom in",
@@ -43,6 +39,8 @@ export function ImageCropper({
   src,
   alt,
   crossOrigin,
+  uiVariant = "default",
+  toolbarComponent,
   cropWidth = 320,
   cropHeight,
   aspect,
@@ -94,7 +92,10 @@ export function ImageCropper({
     onComplete
   });
 
-  const rootClassName = `ic-root${className ? ` ${className}` : ""}`;
+  const variantConfig = IMAGE_CROPPER_VARIANT_REGISTRY[uiVariant];
+  const Toolbar = toolbarComponent ?? variantConfig.Toolbar;
+
+  const rootClassName = `ic-root${variantConfig.rootClassName ? ` ${variantConfig.rootClassName}` : ""}${className ? ` ${className}` : ""}`;
   const zoomPercentage =
     safeMaxZoom === safeMinZoom
       ? 100
@@ -102,6 +103,10 @@ export function ImageCropper({
 
   const handleZoomChange = (event: ChangeEvent<HTMLInputElement>) => {
     setZoom(Number(event.target.value));
+  };
+
+  const handleAdjustZoom = (delta: number) => {
+    setZoom((state?.zoom ?? safeMinZoom) + delta);
   };
 
   const handleSave = async () => {
@@ -152,55 +157,26 @@ export function ImageCropper({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        viewportClassName={variantConfig.viewportClassName}
       />
 
       {showControls ? (
-        <div className="ic-toolbar">
-          <button
-            type="button"
-            className="ic-iconButton"
-            onClick={() => setZoom((state?.zoom ?? safeMinZoom) - zoomStep)}
-            disabled={disabled || !state || state.zoom <= safeMinZoom}
-            aria-label={resolvedLabels.zoomOut}
-          >
-            -
-          </button>
-
-          <input
-            className="ic-slider"
-            type="range"
-            min={safeMinZoom}
-            max={safeMaxZoom}
-            step={zoomStep}
-            value={state?.zoom ?? safeMinZoom}
-            onChange={handleZoomChange}
-            disabled={disabled || !state}
-            aria-label="Zoom"
-          />
-
-          <span className="ic-zoomValue">{zoomPercentage}%</span>
-
-          <button
-            type="button"
-            className="ic-iconButton"
-            onClick={reset}
-            disabled={disabled || !state}
-            aria-label={resolvedLabels.reset}
-          >
-            reset
-          </button>
-
-          {onSave ? (
-            <button
-              type="button"
-              className="ic-saveButton"
-              onClick={handleSave}
-              disabled={disabled || !state || isSaving}
-            >
-              {isSaving ? "Saving..." : resolvedLabels.save}
-            </button>
-          ) : null}
-        </div>
+        <Toolbar
+          labels={resolvedLabels}
+          zoom={state?.zoom ?? safeMinZoom}
+          minZoom={safeMinZoom}
+          maxZoom={safeMaxZoom}
+          zoomStep={zoomStep}
+          zoomPercentage={zoomPercentage}
+          disabled={disabled}
+          hasCropState={!!state}
+          isSaving={isSaving}
+          showSaveButton={!!onSave}
+          onZoomChange={handleZoomChange}
+          onAdjustZoom={handleAdjustZoom}
+          onReset={reset}
+          onSave={handleSave}
+        />
       ) : null}
     </div>
   );

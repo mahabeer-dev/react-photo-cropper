@@ -1,7 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ImageCropper } from "../components/ImageCropper";
+import type { ImageCropperToolbarProps } from "../types";
 import * as canvasUtils from "../utils/canvas";
+
+afterEach(() => {
+  cleanup();
+});
 
 beforeAll(() => {
   Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
@@ -101,5 +106,36 @@ describe("ImageCropper", () => {
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(expect.any(Error));
     });
+  });
+
+  it("renders the card UI variant without default zoom chrome", () => {
+    render(
+      <ImageCropper
+        src="avatar.png"
+        uiVariant="card"
+        shape="rect"
+        cropWidth={200}
+        cropHeight={200}
+        onSave={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Zoom out" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Zoom in" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Reset" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+  });
+
+  it("uses toolbarComponent when provided", () => {
+    function CustomToolbar(_props: ImageCropperToolbarProps) {
+      return <div data-testid="custom-toolbar">custom</div>;
+    }
+
+    render(
+      <ImageCropper src="avatar.png" toolbarComponent={CustomToolbar} cropWidth={100} cropHeight={100} />
+    );
+
+    expect(screen.getByTestId("custom-toolbar")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Zoom out" })).toBeNull();
   });
 });

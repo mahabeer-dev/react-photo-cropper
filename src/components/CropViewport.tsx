@@ -17,6 +17,8 @@ interface CropViewportProps {
   onPointerDown: PointerEventHandler<HTMLDivElement>;
   onPointerMove: PointerEventHandler<HTMLDivElement>;
   onPointerUp: PointerEventHandler<HTMLDivElement>;
+  /** Appended to `ic-viewport` (e.g. `ic-viewport--card` from the variant registry). */
+  viewportClassName?: string;
 }
 
 export function CropViewport({
@@ -34,7 +36,8 @@ export function CropViewport({
   onImageLoad,
   onPointerDown,
   onPointerMove,
-  onPointerUp
+  onPointerUp,
+  viewportClassName
 }: CropViewportProps) {
   const imageStyle: CSSProperties = {
     width: `${baseSize.width}px`,
@@ -44,7 +47,7 @@ export function CropViewport({
 
   return (
     <div
-      className={`ic-viewport${disabled ? " ic-viewport--disabled" : ""}${isDragging ? " ic-viewport--dragging" : ""}`}
+      className={`ic-viewport${viewportClassName ? ` ${viewportClassName}` : ""}${disabled ? " ic-viewport--disabled" : ""}${isDragging ? " ic-viewport--dragging" : ""}`}
       style={{ width: cropSize.width, height: cropSize.height }}
       onPointerDown={disabled ? undefined : onPointerDown}
       onPointerMove={disabled ? undefined : onPointerMove}

@@ -1,6 +1,9 @@
-import type { CSSProperties } from "react";
+import type { ChangeEvent, ComponentType, CSSProperties } from "react";
 
 export type CropShape = "circle" | "rect";
+
+/** `default` — compact toolbar with zoom +/- and percentage. `card` — stacked layout with slider and Reset / Save row (see package styles). */
+export type ImageCropperUIVariant = "default" | "card";
 export type OutputMimeType = "image/png" | "image/jpeg" | "image/webp";
 export type CrossOriginValue = "anonymous" | "use-credentials";
 
@@ -63,7 +66,35 @@ export interface ImageCropperLabels {
   save: string;
 }
 
+/** Props passed to built-in and custom cropper toolbar components. */
+export interface ImageCropperToolbarProps {
+  labels: ImageCropperLabels;
+  zoom: number;
+  minZoom: number;
+  maxZoom: number;
+  zoomStep: number;
+  /** 0–100 derived from zoom between min and max. */
+  zoomPercentage: number;
+  /** Parent `disabled` prop. */
+  disabled: boolean;
+  /** False until the image has loaded and crop state exists. */
+  hasCropState: boolean;
+  isSaving: boolean;
+  /** Whether `onSave` was provided to `ImageCropper`. */
+  showSaveButton: boolean;
+  onZoomChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onAdjustZoom: (delta: number) => void;
+  onReset: () => void;
+  onSave: () => void;
+}
+
+export type ImageCropperToolbarComponent = ComponentType<ImageCropperToolbarProps>;
+
 export interface ImageCropperProps extends CropImageSource {
+  /** When `"card"`, uses the alternate layout (rounded card, full-width slider, Reset + Save). Default keeps the original toolbar. */
+  uiVariant?: ImageCropperUIVariant;
+  /** Renders instead of the toolbar for `uiVariant`. Use with `uiVariant` for root/viewport styling from the registry, or set `className` on `ImageCropper` for fully custom chrome. */
+  toolbarComponent?: ImageCropperToolbarComponent;
   cropWidth?: number;
   cropHeight?: number;
   aspect?: number;
