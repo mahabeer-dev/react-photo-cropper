@@ -1,6 +1,6 @@
 # @mr-mahabeer/react-photo-cropper
 
-Browser-only React image cropper with drag, zoom, circular or rectangular crop overlays, and a typed canvas export helper.
+Browser-only **React** image cropper: drag and zoom, **rect** or **circle** mask, **90° rotation**, built-in or **headless** APIs, and **canvas** export with TypeScript types.
 
 ## Install
 
@@ -8,7 +8,14 @@ Browser-only React image cropper with drag, zoom, circular or rectangular crop o
 npm install @mr-mahabeer/react-photo-cropper
 ```
 
-## Usage
+Styles are optional for the full **`ImageCropper`** component:
+
+```bash
+# default + card UI variants use this stylesheet
+import "@mr-mahabeer/react-photo-cropper/styles.css";
+```
+
+## Quick start (`ImageCropper`)
 
 ```tsx
 import { ImageCropper } from "@mr-mahabeer/react-photo-cropper";
@@ -23,6 +30,7 @@ function AvatarCropper() {
       crossOrigin="anonymous"
       onSave={(result) => {
         console.log(result.blob, result.url);
+        result.revoke();
       }}
       onError={(error) => {
         console.error(error.message);
@@ -32,27 +40,51 @@ function AvatarCropper() {
 }
 ```
 
-## Core Props
+**Card-style layout** (full-width zoom slider, Reset / Save row):
 
-| Prop | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `src` | `string` | required | Image URL or data URL |
-| `shape` | `"circle" \| "rect"` | `"circle"` | Crop overlay shape |
-| `cropWidth` | `number` | `320` | Viewport width in pixels |
-| `cropHeight` | `number` | derived | Explicit viewport height |
-| `aspect` | `number` | unset | Used when `cropHeight` is not provided |
-| `minZoom` | `number` | `1` | Lower zoom bound |
-| `maxZoom` | `number` | `3` | Upper zoom bound |
-| `zoomStep` | `number` | `0.1` | Slider/button zoom increment |
-| `showControls` | `boolean` | `true` | Toggles built-in toolbar |
-| `crossOrigin` | `"anonymous" \| "use-credentials"` | unset | Required for exporting remote images via canvas |
-| `output` | `CropOutputOptions` | unset | Export size, mime type, quality |
-| `onChange` | `(state) => void` | unset | Called whenever crop state changes |
-| `onComplete` | `(state) => void` | unset | Called with the resolved crop state |
-| `onError` | `(error) => void` | unset | Receives export/load errors such as tainted canvas failures |
-| `onSave` | `(result, state) => void` | unset | Invoked by the built-in save button |
+```tsx
+<ImageCropper
+  src={url}
+  uiVariant="card"
+  shape="rect"
+  cropWidth={320}
+  crossOrigin="anonymous"
+  onSave={handleSave}
+/>
+```
 
-## Export Helper
+## `ImageCropper` props
+
+| Prop                  | Type                                       | Default     | Notes                                                                                               |
+| --------------------- | ------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------- |
+| `src`                 | `string`                                   | required    | Image URL or data URL                                                                               |
+| `alt`                 | `string`                                   | preset      | `img` alt text                                                                                      |
+| `crossOrigin`         | `"anonymous" \| "use-credentials"`         | unset       | Use `"anonymous"` for remote images you plan to export (CORS)                                       |
+| `shape`               | `"circle" \| "rect"`                       | `"circle"`  | Crop mask and export clip                                                                           |
+| `cropWidth`           | `number`                                   | `320`       | Viewport width (px)                                                                                 |
+| `cropHeight`          | `number`                                   | derived     | Viewport height; derived from `aspect` or `shape` if omitted                                        |
+| `aspect`              | `number`                                   | unset       | `cropHeight` ≈ `cropWidth / aspect` when height not set                                             |
+| `minZoom` / `maxZoom` | `number`                                   | `1` / `3`   | Zoom range                                                                                          |
+| `zoomStep`            | `number`                                   | `0.1`       | Slider / button step                                                                                |
+| `initialZoom`         | `number`                                   | `1`         | Starting zoom                                                                                       |
+| `initialPosition`     | `{ x, y }`                                 | `{0,0}`     | Starting pan                                                                                        |
+| `initialRotation`     | `number`                                   | `0`         | Snapped to 0, 90, 180, 270                                                                          |
+| `showRotation`        | `boolean`                                  | `true`      | Hide built-in rotate controls when `false`                                                          |
+| `uiVariant`           | `"default" \| "card"`                      | `"default"` | Toolbar layout and card chrome                                                                      |
+| `toolbarComponent`    | `ComponentType<ImageCropperToolbarProps>`  | unset       | Replace toolbar only; `uiVariant` still sets card/root classes unless you override with `className` |
+| `showControls`        | `boolean`                                  | `true`      | Hide all built-in controls                                                                          |
+| `disabled`            | `boolean`                                  | `false`     | Disables interaction                                                                                |
+| `className` / `style` |                                            |             | Root element                                                                                        |
+| `labels`              | `Partial<ImageCropperLabels>`              |             | `zoomIn`, `zoomOut`, `reset`, `save`, `rotateLeft`, `rotateRight`                                   |
+| `output`              | `CropOutputOptions`                        | unset       | Export `type`, `quality`, `width`, `height`, `backgroundColor`                                      |
+| `onChange`            | `(state: CropperChange) => void`           | unset       | Fires when crop state changes (includes `rotation`, `pixelCrop`)                                    |
+| `onComplete`          | `(state: CropperChange) => void`           | unset       | Same payload as `onChange` (both fire on updates)                                                   |
+| `onError`             | `(error: Error) => void`                   | unset       | Export / load errors; avoids rethrow when set                                                       |
+| `onSave`              | `(result, state) => void \| Promise<void>` | unset       | When set, shows Save; receives `CroppedImageResult`                                                 |
+
+## Export helper (`getCroppedImage`)
+
+Works with an **`HTMLImageElement`** or image URL string. Pass **`rotation`** when the preview was rotated (same values as `CropperChange.rotation`).
 
 ```ts
 import { getCroppedImage } from "@mr-mahabeer/react-photo-cropper";
@@ -61,59 +93,82 @@ const result = await getCroppedImage({
   image: htmlImageElement,
   crop: { x: 120, y: 40, width: 320, height: 320 },
   shape: "circle",
-  type: "image/png"
+  rotation: 0,
+  type: "image/png",
+  width: 256,
+  height: 256,
 });
+
+// result.blob, result.url, result.width, result.height
+result.revoke();
 ```
 
-## Headless API (custom UI)
+## Headless API (`/headless`)
 
-Use **`useCropper`**, **`getCroppedImage`**, and **`cropMath`** helpers without importing `ImageCropper` or package CSS:
+For **custom UI**, import from the subpath (no bundled toolbar; **`CropOverlayFrame`** uses inline styles so you can skip package CSS):
 
 ```ts
 import {
   useCropper,
   getCroppedImage,
-  CropOverlayFrame
+  CropOverlayFrame,
+  normalizeRotation,
 } from "@mr-mahabeer/react-photo-cropper/headless";
 ```
 
-**Overlay:** `CropOverlayFrame` draws the dimmed-outside + crop window (inline styles, no package CSS). Types **`UseCropperOptions`**, **`UseCropperReturn`**, **`CropperChange`**, **`CropOverlayFrameProps`**, etc., are exported from the same entry or the root package.
+| What                                          | Purpose                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| **`useCropper`**                              | Zoom, pan, clamping, `state.pixelCrop`, rotation-aware bounds       |
+| **`getCroppedImage`**                         | Same export as above                                                |
+| **`CropOverlayFrame`**                        | Dimmed outside + crop window (`shape`, optional `rectBorderRadius`) |
+| **`normalizeRotation`**, **cropMath** helpers | 90° rotation math, effective size, pointer delta projection, etc.   |
 
-**Runnable example** (Vite + your own markup/styles): see **[examples/headless-custom-ui](./examples/headless-custom-ui/)** and its [README](./examples/headless-custom-ui/README.md) for setup and integration steps.
+Types include **`UseCropperOptions`**, **`UseCropperReturn`**, **`CropperChange`**, **`CropOverlayFrameProps`**, **`PixelCrop`**, and more. The same symbols are also available from the **package root** if you prefer a single import graph.
 
-## Cross-Origin Images
+**Runnable example** (Vite, custom markup/CSS): **[examples/headless-custom-ui](./examples/headless-custom-ui/)**. From the repo root:
 
-If your image comes from another domain, canvas export will fail unless that image is served with valid CORS headers.
+```bash
+npm run example:headless
+```
 
-Use:
+## Extending the built-in UI
+
+Reusable toolbars and registry:
+
+```ts
+import {
+  ImageCropper,
+  DefaultCropperToolbar,
+  CardCropperToolbar,
+  IMAGE_CROPPER_VARIANT_REGISTRY,
+  type ImageCropperToolbarProps,
+} from "@mr-mahabeer/react-photo-cropper";
+```
+
+Implement **`ImageCropperToolbarProps`** and pass **`toolbarComponent={MyToolbar}`** for a fully custom control strip while reusing **`useCropper`** indirectly via **`ImageCropper`**.
+
+## Programmatic utilities (tree-shakeable)
+
+From the main entry (also re-exported on `/headless` where applicable):
+
+`clamp`, `clampPosition`, `getCoverSize`, `getCropArea`, `getEffectiveImageSize`, `getMinZoom`, `getPixelCrop`, `getRenderedSize`, `getRotatedRenderedBounds`, `normalizeRotation`, `rotatePointerDelta`
+
+## Package exports
+
+| Path                                          | Use                                      |
+| --------------------------------------------- | ---------------------------------------- |
+| `@mr-mahabeer/react-photo-cropper`            | `ImageCropper`, hooks, helpers, types    |
+| `@mr-mahabeer/react-photo-cropper/headless`   | Headless surface (no full chrome)        |
+| `@mr-mahabeer/react-photo-cropper/styles.css` | Styles for `ImageCropper` / card variant |
+
+## Cross-origin images
+
+Canvas export needs CORS on the image response and **`crossOrigin="anonymous"`** (or `"use-credentials"`) on the `<img>` before load. Without it, preview may work but **`getCroppedImage`** / Save can throw (tainted canvas).
 
 ```tsx
 <ImageCropper
   src="https://cdn.example.com/avatar.jpg"
   crossOrigin="anonymous"
-  onError={(error) => {
-    console.error(error.message);
-  }}
+  onError={(e) => console.error(e.message)}
 />
-```
-
-Requirements:
-- the image server must return `Access-Control-Allow-Origin`
-- `crossOrigin="anonymous"` must be set before the image is fetched
-- if the remote server does not allow CORS, browser-side cropping preview may still work but export via `toBlob()` will fail
-
-## Publish Checklist
-
-```bash
-npm run lint
-npm run test
-npm run build
-npm run pack:check
-```
-
-After that:
-
-```bash
-npm login
-npm publish --access public
 ```
