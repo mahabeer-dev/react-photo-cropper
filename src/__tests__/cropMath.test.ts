@@ -6,6 +6,7 @@ import {
   getEffectiveImageSize,
   getMinZoom,
   getPixelCrop,
+  getPixelCropInAperture,
   getRotatedRenderedBounds,
   normalizeCropFrameScale,
   normalizeRotation,
@@ -58,6 +59,23 @@ describe("cropMath", () => {
       y: 0,
       width: 500,
       height: 500
+    });
+  });
+
+  it("maps centered aperture to the same image region shown in overlay", () => {
+    expect(
+      getPixelCropInAperture(
+        { width: 900, height: 700 },
+        { width: 300, height: 300 },
+        { width: 180, height: 180 },
+        { x: 0, y: 0 },
+        1
+      )
+    ).toEqual({
+      x: 240,
+      y: 140,
+      width: 420,
+      height: 420
     });
   });
 

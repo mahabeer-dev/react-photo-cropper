@@ -17,6 +17,7 @@ export {
   getEffectiveImageSize,
   getMinZoom,
   getPixelCrop,
+  getPixelCropInAperture,
   getRenderedSize,
   getRotatedRenderedBounds,
   MIN_CROP_FRAME_SCALE,

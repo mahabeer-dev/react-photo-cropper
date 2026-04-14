@@ -141,6 +141,39 @@ export function getPixelCrop(
   return { x, y, width, height };
 }
 
+/**
+ * Maps a centered inner aperture (overlay frame) to source pixels while image rendering
+ * is still based on the full viewport size.
+ */
+export function getPixelCropInAperture(
+  imageSize: Size,
+  viewportSize: Size,
+  apertureSize: Size,
+  position: Point,
+  zoom: number
+): PixelCrop {
+  const renderedSize = getRenderedSize(imageSize, viewportSize, zoom);
+  const safePosition = clampPosition(position, renderedSize, apertureSize);
+  const insetX = (viewportSize.width - apertureSize.width) / 2;
+  const insetY = (viewportSize.height - apertureSize.height) / 2;
+
+  const sourceX =
+    ((renderedSize.width - viewportSize.width) / 2 + insetX - safePosition.x) /
+    renderedSize.width;
+  const sourceY =
+    ((renderedSize.height - viewportSize.height) / 2 + insetY - safePosition.y) /
+    renderedSize.height;
+  const sourceWidth = apertureSize.width / renderedSize.width;
+  const sourceHeight = apertureSize.height / renderedSize.height;
+
+  const x = clamp(Math.round(sourceX * imageSize.width), 0, imageSize.width);
+  const y = clamp(Math.round(sourceY * imageSize.height), 0, imageSize.height);
+  const width = clamp(Math.round(sourceWidth * imageSize.width), 1, imageSize.width - x);
+  const height = clamp(Math.round(sourceHeight * imageSize.height), 1, imageSize.height - y);
+
+  return { x, y, width, height };
+}
+
 export function getCropArea(
   imageSize: Size,
   cropSize: Size,

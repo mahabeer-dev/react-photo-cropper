@@ -14,7 +14,7 @@ import {
   getCoverSize,
   getEffectiveImageSize,
   getMinZoom,
-  getPixelCrop,
+  getPixelCropInAperture,
   getRenderedSize,
   getRotatedRenderedBounds,
   normalizeCropFrameScale,
@@ -126,7 +126,13 @@ export function useCropper({
       cropFrameScale,
       imageSize,
       renderedSize,
-      pixelCrop: getPixelCrop(effectiveImageSize, apertureSize, safePosition, zoom),
+      pixelCrop: getPixelCropInAperture(
+        effectiveImageSize,
+        cropSize,
+        apertureSize,
+        safePosition,
+        zoom
+      ),
       minZoom,
       maxZoom
     };
