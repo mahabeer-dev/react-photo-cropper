@@ -33,7 +33,10 @@ export interface CropperState {
   position: Point;
   /** Clockwise degrees; normalized to 0, 90, 180, or 270. */
   rotation: number;
+  /** Viewport size (`cropWidth` × `cropHeight`); the visible hole is smaller when `cropFrameScale` is below 1. */
   cropSize: Size;
+  /** Effective scale of the inner crop window (clamped). Same as `ImageCropper`’s `cropFrameScale`. */
+  cropFrameScale: number;
   imageSize: Size;
   renderedSize: Size;
   pixelCrop: PixelCrop;
@@ -47,6 +50,11 @@ export interface CropperChange extends CropperState {
 /** Options for {@link useCropper} — headless crop state (zoom, pan, rotation-aware math). */
 export interface UseCropperOptions {
   cropSize: Size;
+  /**
+   * Size of the clear crop window relative to `cropSize` (each axis), centered.
+   * `1` = full viewport (default). `0.85` = smaller hole with more dimmed area. Clamped to [0.15, 1].
+   */
+  cropFrameScale?: number;
   /** Clockwise degrees (0, 90, 180, 270); pass from your own rotation state. */
   rotation?: number;
   minZoom?: number;
@@ -145,6 +153,11 @@ export interface ImageCropperProps extends CropImageSource {
   initialRotation?: number;
   /** When false, rotation controls are hidden (rotation stays at `initialRotation`). Default true. */
   showRotation?: boolean;
+  /**
+   * Inner crop frame as a fraction of the viewport (`cropWidth` × `cropHeight`), centered.
+   * `1` fills the viewport; lower values shrink the clear area (more overlay). Clamped to [0.15, 1].
+   */
+  cropFrameScale?: number;
   cropWidth?: number;
   cropHeight?: number;
   aspect?: number;

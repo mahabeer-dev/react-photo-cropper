@@ -17,6 +17,7 @@ const DEMO_SRC = "https://picsum.photos/id/237/900/700";
 export default function App() {
   const imageRef = useRef<HTMLImageElement>(null);
   const [rotation, setRotation] = useState(0);
+  const [cropFrameScale, setCropFrameScale] = useState(1);
   const [cropShape, setCropShape] = useState<CropShape>("rect");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [status, setStatus] = useState(
@@ -38,13 +39,14 @@ export default function App() {
     handlePointerUp,
   } = useCropper({
     cropSize: CROP_SIZE,
+    cropFrameScale,
     rotation,
     minZoom: 1,
     maxZoom: 3,
     initialZoom: 1,
     onChange: (next) => {
       setStatus(
-        `zoom ${next.zoom.toFixed(2)} · rotation ${next.rotation}° · crop ${next.pixelCrop.width}×${next.pixelCrop.height}px`,
+        `zoom ${next.zoom.toFixed(2)} · frame ${next.cropFrameScale.toFixed(2)} · rotation ${next.rotation}° · crop ${next.pixelCrop.width}×${next.pixelCrop.height}px`,
       );
     },
   });
@@ -66,6 +68,7 @@ export default function App() {
 
   const handleReset = () => {
     setRotation(0);
+    setCropFrameScale(1);
     resetCropper();
   };
 
@@ -130,7 +133,7 @@ export default function App() {
               })
             }
           />
-          <CropOverlayFrame shape={cropShape} rectBorderRadius={14} />
+          <CropOverlayFrame shape={cropShape} frameScale={cropFrameScale} rectBorderRadius={14} />
         </div>
 
         <div className="controls">
@@ -143,6 +146,19 @@ export default function App() {
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
+              disabled={!state}
+            />
+          </label>
+
+          <label className="control">
+            <span>Crop window size (cropFrameScale)</span>
+            <input
+              type="range"
+              min={0.15}
+              max={1}
+              step={0.05}
+              value={cropFrameScale}
+              onChange={(e) => setCropFrameScale(Number(e.target.value))}
               disabled={!state}
             />
           </label>

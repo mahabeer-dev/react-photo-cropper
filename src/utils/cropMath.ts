@@ -40,6 +40,26 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+/** Smallest allowed `cropFrameScale` (avoids a degenerate aperture). */
+export const MIN_CROP_FRAME_SCALE = 0.15;
+
+/** Clamp `cropFrameScale` to a supported range for overlay + export math. */
+export function normalizeCropFrameScale(scale: number): number {
+  return clamp(scale, MIN_CROP_FRAME_SCALE, 1);
+}
+
+/**
+ * Inner crop aperture size (centered in the viewport) for a given scale.
+ * `1` = full viewport; `0.85` = 85% width and height, centered (smaller “hole”, more dimming).
+ */
+export function getApertureCropSize(viewportSize: Size, frameScale: number): Size {
+  const s = normalizeCropFrameScale(frameScale);
+  return {
+    width: Math.max(1, Math.round(viewportSize.width * s)),
+    height: Math.max(1, Math.round(viewportSize.height * s))
+  };
+}
+
 export function getCoverSize(imageSize: Size, cropSize: Size): Size {
   if (!imageSize.width || !imageSize.height || !cropSize.width || !cropSize.height) {
     return { width: 0, height: 0 };

@@ -52,10 +52,10 @@ import {
 
 | You build | The library provides |
 |-----------|----------------------|
-| Viewport `div` (fixed `width`/`height` = `cropSize`) | `cropSize` passed into `useCropper` |
+| Viewport `div` (fixed `width`/`height` = `cropSize`) | `cropSize` + optional **`cropFrameScale`** passed into `useCropper` |
 | `<img>` + `onLoad` → `setImageSize({ naturalWidth, naturalHeight })` | `baseSize`, `position`, `state`, pointer handlers |
 | `transform` on the image (see `App.tsx`) matching translate → scale → rotate | Same math the full `CropViewport` uses |
-| **Overlay** (dimmed outside + crop window) | **`CropOverlayFrame`** — render after `<img>` inside the viewport. Inline styles only (no `styles.css`). Props: `shape` (`"rect"` \| `"circle"`), optional `rectBorderRadius`. |
+| **Overlay** (dimmed outside + crop window) | **`CropOverlayFrame`** — render after `<img>`. Pass **`frameScale`** equal to **`useCropper`’s `cropFrameScale`** so preview matches export. Props: `shape`, optional `rectBorderRadius`, **`frameScale`** (default `1`). |
 | `onPointerDown` / `Move` / `Up` on the viewport | `handlePointerDown`, `handlePointerMove`, `handlePointerUp` |
 | Zoom / rotate / reset controls | `setZoom`, your `rotation` state + `normalizeRotation`, `reset()` |
 | Save button | `getCroppedImage({ ... })` — use the same **`shape`** as `CropOverlayFrame` for consistent export. |

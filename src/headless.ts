@@ -9,6 +9,7 @@ export { getCroppedImage } from "./utils/canvas";
 export {
   clamp,
   clampPosition,
+  getApertureCropSize,
   getCoverSize,
   getCropArea,
   getEffectiveImageSize,
@@ -16,6 +17,8 @@ export {
   getPixelCrop,
   getRenderedSize,
   getRotatedRenderedBounds,
+  MIN_CROP_FRAME_SCALE,
+  normalizeCropFrameScale,
   normalizeRotation,
   rotatePointerDelta
 } from "./utils/cropMath";

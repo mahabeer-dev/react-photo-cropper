@@ -48,6 +48,7 @@ export function ImageCropper({
   cropHeight,
   aspect,
   shape = "circle",
+  cropFrameScale = 1,
   minZoom = 1,
   maxZoom = 3,
   zoomStep = 0.1,
@@ -90,6 +91,7 @@ export function ImageCropper({
     handlePointerUp
   } = useCropper({
     cropSize,
+    cropFrameScale,
     rotation,
     minZoom,
     maxZoom,
@@ -177,6 +179,7 @@ export function ImageCropper({
         onPointerUp={handlePointerUp}
         viewportClassName={variantConfig.viewportClassName}
         overlayRectBorderRadius={uiVariant === "card" ? 10 : undefined}
+        overlayFrameScale={cropFrameScale}
       />
 
       {showControls ? (

@@ -61,6 +61,7 @@ function AvatarCropper() {
 | `alt`                 | `string`                                   | preset      | `img` alt text                                                                                      |
 | `crossOrigin`         | `"anonymous" \| "use-credentials"`         | unset       | Use `"anonymous"` for remote images you plan to export (CORS)                                       |
 | `shape`               | `"circle" \| "rect"`                       | `"circle"`  | Crop mask and export clip                                                                           |
+| `cropFrameScale`      | `number`                                   | `1`         | Inner clear area as a fraction of the viewport (each axis), centered; more dimming when lower. Clamped to [0.15, 1] |
 | `cropWidth`           | `number`                                   | `320`       | Viewport width (px)                                                                                 |
 | `cropHeight`          | `number`                                   | derived     | Viewport height; derived from `aspect` or `shape` if omitted                                        |
 | `aspect`              | `number`                                   | unset       | `cropHeight` ≈ `cropWidth / aspect` when height not set                                             |
@@ -118,10 +119,10 @@ import {
 
 | What                                          | Purpose                                                             |
 | --------------------------------------------- | ------------------------------------------------------------------- |
-| **`useCropper`**                              | Zoom, pan, clamping, `state.pixelCrop`, rotation-aware bounds       |
+| **`useCropper`**                              | Zoom, pan, clamping, `state.pixelCrop`, optional **`cropFrameScale`** (smaller clear window), rotation-aware bounds |
 | **`getCroppedImage`**                         | Same export as above                                                |
-| **`CropOverlayFrame`**                        | Dimmed outside + crop window (`shape`, optional `rectBorderRadius`) |
-| **`normalizeRotation`**, **cropMath** helpers | 90° rotation math, effective size, pointer delta projection, etc.   |
+| **`CropOverlayFrame`**                        | Dimmed outside + crop window; pass **`frameScale`** to match `useCropper`’s `cropFrameScale` |
+| **`normalizeRotation`**, **`normalizeCropFrameScale`**, **`getApertureCropSize`**, other **cropMath** | Rotation, frame scale, geometry helpers |
 
 Types include **`UseCropperOptions`**, **`UseCropperReturn`**, **`CropperChange`**, **`CropOverlayFrameProps`**, **`PixelCrop`**, and more. The same symbols are also available from the **package root** if you prefer a single import graph.
 
@@ -151,7 +152,7 @@ Implement **`ImageCropperToolbarProps`** and pass **`toolbarComponent={MyToolbar
 
 From the main entry (also re-exported on `/headless` where applicable):
 
-`clamp`, `clampPosition`, `getCoverSize`, `getCropArea`, `getEffectiveImageSize`, `getMinZoom`, `getPixelCrop`, `getRenderedSize`, `getRotatedRenderedBounds`, `normalizeRotation`, `rotatePointerDelta`
+`clamp`, `clampPosition`, `getApertureCropSize`, `getCoverSize`, `getCropArea`, `getEffectiveImageSize`, `getMinZoom`, `getPixelCrop`, `getRenderedSize`, `getRotatedRenderedBounds`, `MIN_CROP_FRAME_SCALE`, `normalizeCropFrameScale`, `normalizeRotation`, `rotatePointerDelta`
 
 ## Package exports
 

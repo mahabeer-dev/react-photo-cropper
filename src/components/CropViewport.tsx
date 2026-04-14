@@ -24,6 +24,8 @@ interface CropViewportProps {
   viewportClassName?: string;
   /** Corner radius for the inner crop window when `shape` is `"rect"`. */
   overlayRectBorderRadius?: number;
+  /** Passed to `CropOverlayFrame` — must match `useCropper`’s `cropFrameScale`. */
+  overlayFrameScale?: number;
 }
 
 export function CropViewport({
@@ -44,7 +46,8 @@ export function CropViewport({
   onPointerMove,
   onPointerUp,
   viewportClassName,
-  overlayRectBorderRadius
+  overlayRectBorderRadius,
+  overlayFrameScale = 1
 }: CropViewportProps) {
   const imageStyle: CSSProperties = {
     width: `${baseSize.width}px`,
@@ -77,6 +80,7 @@ export function CropViewport({
       />
       <CropOverlayFrame
         shape={shape}
+        frameScale={overlayFrameScale}
         rectBorderRadius={overlayRectBorderRadius}
         className="ic-mask"
         frameClassName={`ic-frame ic-frame--${shape}`}

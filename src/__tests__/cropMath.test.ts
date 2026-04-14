@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   clampPosition,
+  getApertureCropSize,
   getCoverSize,
   getEffectiveImageSize,
   getMinZoom,
   getPixelCrop,
   getRotatedRenderedBounds,
+  normalizeCropFrameScale,
   normalizeRotation,
   rotatePointerDelta
 } from "../utils/cropMath";
@@ -80,5 +82,14 @@ describe("cropMath", () => {
     const p = rotatePointerDelta(10, 0, 90);
     expect(p.x).toBeCloseTo(0, 5);
     expect(p.y).toBeCloseTo(-10, 5);
+  });
+
+  it("scales aperture crop size and clamps crop frame scale", () => {
+    expect(getApertureCropSize({ width: 200, height: 300 }, 0.5)).toEqual({
+      width: 100,
+      height: 150
+    });
+    expect(normalizeCropFrameScale(2)).toBe(1);
+    expect(normalizeCropFrameScale(0.05)).toBe(0.15);
   });
 });
