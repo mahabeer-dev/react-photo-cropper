@@ -24,6 +24,8 @@ export default function App() {
     "Drag the image. Use controls below — none of this chrome comes from the library.",
   );
 
+  console.log("cropFrameScale", cropFrameScale);
+
   const {
     baseSize,
     position,
@@ -133,7 +135,11 @@ export default function App() {
               })
             }
           />
-          <CropOverlayFrame shape={cropShape} frameScale={cropFrameScale} rectBorderRadius={14} />
+          <CropOverlayFrame
+            shape={cropShape}
+            frameScale={cropFrameScale}
+            rectBorderRadius={14}
+          />
         </div>
 
         <div className="controls">
