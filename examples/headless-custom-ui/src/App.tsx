@@ -12,7 +12,7 @@ import "./App.css";
 const CROP_SIZE = { width: 300, height: 300 };
 
 /** Demo image (CORS-friendly for canvas export). Swap for your own URL + `crossOrigin` rules. */
-const DEMO_SRC = "https://picsum.photos/id/237/900/700";
+const DEMO_SRC = "/dummyImage.jpg";
 
 export default function App() {
   const imageRef = useRef<HTMLImageElement>(null);
