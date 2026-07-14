@@ -1,4 +1,4 @@
-import type { CropArea, PixelCrop, Point, Size } from "../types";
+import type { CropArea, CropFit, PixelCrop, Point, Size } from "../types";
 
 export function normalizeRotation(degrees: number): 0 | 90 | 180 | 270 {
   const snapped = Math.round(degrees / 90) * 90;
@@ -73,10 +73,20 @@ export function getCoverSize(imageSize: Size, cropSize: Size): Size {
   };
 }
 
+export interface GetMinZoomOptions {
+  /** `"cover"` (default) floors zoom at fit-to-cover; `"contain"` allows zooming
+   *  out until the whole image fits inside `frame`. */
+  fit?: CropFit;
+  /** The crop frame (aperture) to fit inside when `fit` is `"contain"`.
+   *  Defaults to `cropSize` (the full viewport). */
+  frame?: Size;
+}
+
 export function getMinZoom(
   imageSize: Size,
   cropSize: Size,
-  requestedMinZoom = 1
+  requestedMinZoom = 1,
+  options: GetMinZoomOptions = {}
 ): number {
   if (!imageSize.width || !imageSize.height) {
     return requestedMinZoom;
@@ -87,11 +97,27 @@ export function getMinZoom(
     return requestedMinZoom;
   }
 
-  return Math.max(
+  const coverMinZoom = Math.max(
     requestedMinZoom,
     cropSize.width / baseSize.width,
     cropSize.height / baseSize.height
   );
+
+  if (options.fit !== "contain") {
+    return coverMinZoom;
+  }
+
+  // Contain: allow zooming out until the whole image fits inside the crop frame
+  // (the aperture). `baseSize` renders the image at zoom 1 (cover of the
+  // viewport), so the zoom that makes the image fit the frame is the smaller of
+  // the two axis ratios. Never raise the floor above cover.
+  const frame = options.frame?.width && options.frame?.height ? options.frame : cropSize;
+  const containMinZoom = Math.min(
+    frame.width / baseSize.width,
+    frame.height / baseSize.height
+  );
+
+  return Math.min(coverMinZoom, containMinZoom);
 }
 
 export function getRenderedSize(

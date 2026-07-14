@@ -7,6 +7,16 @@ import type {
 
 export type CropShape = "circle" | "rect";
 
+/**
+ * How far the image may zoom out.
+ * - `"cover"` (default): the image always fills the crop frame; the lowest zoom
+ *   is fit-to-cover (its historical behaviour).
+ * - `"contain"`: the image may zoom out until it fits *inside* the crop frame,
+ *   so the whole image is visible. The export letterboxes it (aspect preserved,
+ *   transparent padding) instead of cropping the overflow.
+ */
+export type CropFit = "cover" | "contain";
+
 /** `default` — compact toolbar with zoom +/- and percentage. `card` — stacked layout with slider and Reset / Save row (see package styles). */
 export type ImageCropperUIVariant = "default" | "card";
 export type OutputMimeType = "image/png" | "image/jpeg" | "image/webp";
@@ -59,6 +69,9 @@ export interface UseCropperOptions {
   rotation?: number;
   minZoom?: number;
   maxZoom?: number;
+  /** Zoom-out behaviour. `"cover"` (default) floors zoom at fit-to-cover;
+   *  `"contain"` lets the image zoom out until it fits inside the crop frame. */
+  fit?: CropFit;
   initialZoom?: number;
   initialPosition?: Point;
   onChange?: (state: CropperChange) => void;
@@ -164,6 +177,9 @@ export interface ImageCropperProps extends CropImageSource {
   shape?: CropShape;
   minZoom?: number;
   maxZoom?: number;
+  /** Zoom-out behaviour. `"cover"` (default) keeps the frame filled; `"contain"`
+   *  lets the user zoom out until the whole image fits (export is letterboxed). */
+  fit?: CropFit;
   zoomStep?: number;
   initialZoom?: number;
   initialPosition?: Point;
@@ -186,4 +202,19 @@ export interface GetCroppedImageParams extends CropOutputOptions {
   crossOrigin?: CrossOriginValue;
   /** Clockwise degrees (0, 90, 180, 270). When set, `crop` is in logical pixel space after rotation (same as `CropperState.pixelCrop`). */
   rotation?: number;
+  /**
+   * Fit mode. `"cover"` (default) samples `crop` as a source rectangle — the
+   * historical behaviour. `"contain"` letterboxes the whole image into the crop
+   * frame (aspect preserved, transparent padding), which requires the render
+   * geometry below (`frame`, `renderedSize`, `position`, all from the cropper
+   * state). Ignored — falls back to `"cover"` — if those are absent.
+   */
+  fit?: CropFit;
+  /** contain only: crop-frame (aperture) size the output is drawn into; also the
+   *  default output dimensions. Use `CropperState.cropSize` × `cropFrameScale`. */
+  frame?: Size;
+  /** contain only: the image's rendered size within the frame (`CropperState.renderedSize`). */
+  renderedSize?: Size;
+  /** contain only: pan offset within the frame (`CropperState.position`). */
+  position?: Point;
 }

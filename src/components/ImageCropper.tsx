@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { ImageCropperLabels, ImageCropperProps, Size } from "../types";
 import { getCroppedImage } from "../utils/canvas";
-import { normalizeRotation } from "../utils/cropMath";
+import { getApertureCropSize, normalizeRotation } from "../utils/cropMath";
 import { CropViewport } from "./CropViewport";
 import { useCropper } from "../hooks/useCropper";
 import { IMAGE_CROPPER_VARIANT_REGISTRY } from "./variants/registry";
@@ -51,6 +51,7 @@ export function ImageCropper({
   cropFrameScale = 1,
   minZoom = 1,
   maxZoom = 3,
+  fit = "cover",
   zoomStep = 0.1,
   initialZoom = 1,
   initialRotation = 0,
@@ -95,6 +96,7 @@ export function ImageCropper({
     rotation,
     minZoom,
     maxZoom,
+    fit,
     initialZoom,
     initialPosition,
     onChange,
@@ -141,6 +143,16 @@ export function ImageCropper({
         shape,
         crossOrigin,
         rotation: state.rotation,
+        // Contain exports the whole image letterboxed into the crop frame; pass
+        // the render geometry so the export matches the on-screen preview.
+        ...(fit === "contain"
+          ? {
+              fit,
+              frame: getApertureCropSize(state.cropSize, state.cropFrameScale),
+              renderedSize: state.renderedSize,
+              position: state.position
+            }
+          : null),
         ...output
       });
 

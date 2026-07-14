@@ -28,6 +28,7 @@ export {
 export type { CropOverlayFrameProps } from "./components/CropOverlayFrame";
 export type {
   CropArea,
+  CropFit,
   CropImageSource,
   CropOutputOptions,
   CropShape,

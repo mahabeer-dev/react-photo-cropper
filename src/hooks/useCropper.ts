@@ -33,6 +33,7 @@ export function useCropper({
   rotation: rotationProp = 0,
   minZoom: requestedMinZoom = 1,
   maxZoom: requestedMaxZoom = 3,
+  fit = "cover",
   initialZoom = 1,
   initialPosition = { x: 0, y: 0 },
   onChange,
@@ -63,8 +64,8 @@ export function useCropper({
   );
 
   const minZoom = useMemo(
-    () => getMinZoom(effectiveImageSize, cropSize, requestedMinZoom),
-    [cropSize, effectiveImageSize, requestedMinZoom]
+    () => getMinZoom(effectiveImageSize, cropSize, requestedMinZoom, { fit, frame: apertureSize }),
+    [apertureSize, cropSize, effectiveImageSize, fit, requestedMinZoom]
   );
   const maxZoom = Math.max(minZoom, requestedMaxZoom);
 

@@ -66,6 +66,7 @@ function AvatarCropper() {
 | `cropHeight`          | `number`                                   | derived     | Viewport height; derived from `aspect` or `shape` if omitted                                        |
 | `aspect`              | `number`                                   | unset       | `cropHeight` ≈ `cropWidth / aspect` when height not set                                             |
 | `minZoom` / `maxZoom` | `number`                                   | `1` / `3`   | Zoom range                                                                                          |
+| `fit`                 | `"cover" \| "contain"`                     | `"cover"`   | `"cover"` keeps the frame filled (lowest zoom = fit-to-cover). `"contain"` lets the user zoom out until the whole image fits inside the frame; the export is letterboxed (aspect kept, transparent padding) instead of cropping the overflow |
 | `zoomStep`            | `number`                                   | `0.1`       | Slider / button step                                                                                |
 | `initialZoom`         | `number`                                   | `1`         | Starting zoom                                                                                       |
 | `initialPosition`     | `{ x, y }`                                 | `{0,0}`     | Starting pan                                                                                        |

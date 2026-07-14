@@ -33,6 +33,40 @@ describe("cropMath", () => {
     ).toBe(1.25);
   });
 
+  it("floors zoom at fit-to-cover (1) by default", () => {
+    // base = cover(1000x500 -> 200x200) = 400x200; cover floor = max(1, 200/400, 200/200) = 1.
+    expect(getMinZoom({ width: 1000, height: 500 }, { width: 200, height: 200 })).toBe(1);
+  });
+
+  it("allows zooming out to fit inside the frame when fit is 'contain'", () => {
+    // base = 400x200; contain floor = min(200/400, 200/200) = 0.5 (the whole
+    // 1000x500 image fits inside the 200x200 frame at zoom 0.5).
+    expect(
+      getMinZoom({ width: 1000, height: 500 }, { width: 200, height: 200 }, 1, {
+        fit: "contain"
+      })
+    ).toBe(0.5);
+  });
+
+  it("fits inside the aperture frame (not the full viewport) when given one", () => {
+    // viewport 200x200, aperture 130x130 -> contain floor = min(130/400, 130/200) = 0.325.
+    expect(
+      getMinZoom({ width: 1000, height: 500 }, { width: 200, height: 200 }, 1, {
+        fit: "contain",
+        frame: { width: 130, height: 130 }
+      })
+    ).toBeCloseTo(0.325, 6);
+  });
+
+  it("contain never raises the floor above the requested/cover minimum", () => {
+    // Even with a high requested minimum, contain still permits zooming out.
+    expect(
+      getMinZoom({ width: 1000, height: 500 }, { width: 200, height: 200 }, 2, {
+        fit: "contain"
+      })
+    ).toBe(0.5);
+  });
+
   it("clamps image movement so the crop viewport never shows empty space", () => {
     expect(
       clampPosition(

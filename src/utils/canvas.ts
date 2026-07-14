@@ -92,20 +92,31 @@ export async function getCroppedImage({
   shape = "rect",
   type = "image/png",
   quality = 0.92,
-  width = crop.width,
-  height = crop.height,
+  width,
+  height,
   backgroundColor,
   crossOrigin,
-  rotation: rotationInput = 0
+  rotation: rotationInput = 0,
+  fit = "cover",
+  frame,
+  renderedSize,
+  position = { x: 0, y: 0 }
 }: GetCroppedImageParams): Promise<CroppedImageResult> {
   const sourceImage =
     typeof image === "string" ? await loadImageElement(image, crossOrigin) : image;
 
   const rotation = normalizeRotation(rotationInput);
 
+  // Contain letterboxes the whole image into the crop frame (aspect preserved,
+  // transparent padding) instead of sampling a source sub-rectangle. It needs
+  // the render geometry; without it, fall back to the cover source-rect path.
+  const isContain = fit === "contain" && !!frame && !!renderedSize;
+  const outputWidth = width ?? (isContain ? frame!.width : crop.width);
+  const outputHeight = height ?? (isContain ? frame!.height : crop.height);
+
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(width));
-  canvas.height = Math.max(1, Math.round(height));
+  canvas.width = Math.max(1, Math.round(outputWidth));
+  canvas.height = Math.max(1, Math.round(outputHeight));
 
   const context = canvas.getContext("2d");
   if (!context) {
@@ -127,7 +138,27 @@ export async function getCroppedImage({
     context.clip();
   }
 
-  if (rotation === 0) {
+  if (isContain) {
+    // Draw the whole (rotation-corrected) image scaled to its rendered size and
+    // centered in the frame with the current pan; the canvas clips any overflow
+    // and leaves transparent padding where the image is smaller than the frame.
+    const drawSource =
+      rotation === 0 ? sourceImage : createLogicalOrientationCanvas(sourceImage, rotation);
+    try {
+      const scaleX = canvas.width / frame!.width;
+      const scaleY = canvas.height / frame!.height;
+      const destWidth = renderedSize!.width * scaleX;
+      const destHeight = renderedSize!.height * scaleY;
+      const destX = ((frame!.width - renderedSize!.width) / 2 + position.x) * scaleX;
+      const destY = ((frame!.height - renderedSize!.height) / 2 + position.y) * scaleY;
+      context.drawImage(drawSource, destX, destY, destWidth, destHeight);
+    } finally {
+      if (drawSource !== sourceImage) {
+        (drawSource as HTMLCanvasElement).width = 0;
+        (drawSource as HTMLCanvasElement).height = 0;
+      }
+    }
+  } else if (rotation === 0) {
     context.drawImage(
       sourceImage,
       crop.x,
